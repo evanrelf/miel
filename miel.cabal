@@ -8,9 +8,7 @@ homepage:   https://github.com/evanrelf/miel
 license:    ISC
 copyright:  2020 Evan Relf
 
-executable miel
-  hs-source-dirs: src
-  main-is: Main.hs
+common common
   build-depends:
     , base
     , relude
@@ -32,6 +30,12 @@ executable miel
     -Wredundant-constraints
     -foptimal-applicative-do
     -fshow-warning-groups
+
+executable miel
+  import: common
+  hs-source-dirs: src
+  main-is: Main.hs
+  ghc-options:
     -threaded
     -rtsopts
     -with-rtsopts=-N
