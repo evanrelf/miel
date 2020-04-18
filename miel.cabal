@@ -1,0 +1,36 @@
+cabal-version: 3.0
+
+name:       miel
+version:    0.0.0.0
+author:     Evan Relf <evan@evanrelf.com>
+maintainer: Evan Relf <evan@evanrelf.com>
+homepage:   https://github.com/evanrelf/miel
+license:    ISC
+copyright:  2020 Evan Relf
+
+executable miel
+  hs-source-dirs: src
+  main-is: Main.hs
+  build-depends:
+    , base
+    , relude
+  mixins:
+    , base hiding (Prelude)
+    , relude (Relude as Prelude)
+  default-extensions:
+    , OverloadedStrings
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Werror=incomplete-record-updates
+    -Werror=incomplete-uni-patterns
+    -Werror=missing-fields
+    -Werror=partial-fields
+    -Widentities
+    -Wmissing-home-modules
+    -Wredundant-constraints
+    -foptimal-applicative-do
+    -fshow-warning-groups
+    -threaded
+    -rtsopts
+    -with-rtsopts=-N
