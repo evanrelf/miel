@@ -75,6 +75,7 @@ parseSettings = do
     , OA.long "database"
     , OA.short 'd'
     , OA.value "miel.sqlite3"
+    , OA.hidden
     ]
   pure Settings{..}
 
