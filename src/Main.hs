@@ -34,7 +34,7 @@ data Options = Options Command
 
 data Command
   = Add Text
-  | Query
+  | List
   deriving stock Show
 
 
@@ -45,7 +45,7 @@ parseAdd = Add . unwords <$> some (OA.strArgument (OA.metavar "DESCRIPTION"))
 parseCommand :: OA.Parser Command
 parseCommand = OA.hsubparser $ mconcat
   [ OA.command "add" (OA.info parseAdd mempty)
-  , OA.command "query" (OA.info (pure Query) mempty)
+  , OA.command "list" (OA.info (pure List) mempty)
   ]
 
 
@@ -73,7 +73,7 @@ main = do
           [ Task{ id = Selda.def, description, status = Open }
           ]
 
-    Query ->
+    List ->
       Selda.withSQLite sqlite do
         Selda.tryCreateTable tasks
         Selda.query (Selda.select tasks) >>= mapM_ print
