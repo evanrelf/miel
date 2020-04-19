@@ -39,7 +39,7 @@ main = do
           [ Task{ id = Selda.def, description }
           ]
 
-    Remove (Selda.toId -> id) ->
+    Delete (Selda.toId -> id) ->
       Selda.withSQLite database do
         Selda.tryCreateTable tasks
         rows <- Selda.deleteFrom tasks (#id `Selda.is` id)
@@ -49,4 +49,3 @@ main = do
       Selda.withSQLite database do
         Selda.tryCreateTable tasks
         Selda.query (Selda.select tasks) >>= mapM_ print
-

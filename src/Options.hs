@@ -23,7 +23,7 @@ data Settings = Settings
 
 data Command
   = Add Text
-  | Remove Int
+  | Delete Int
   | List
   deriving stock Show
 
@@ -32,8 +32,8 @@ parseAddCommand :: Parser Command
 parseAddCommand = Add . unwords <$> some (strArgument (metavar "DESCRIPTION"))
 
 
-parseRemoveCommand :: Parser Command
-parseRemoveCommand = Remove <$> argument auto (metavar "ID")
+parseDeleteCommand :: Parser Command
+parseDeleteCommand = Delete <$> argument auto (metavar "ID")
 
 
 parseListCommand :: Parser Command
@@ -45,9 +45,9 @@ parseCommand = hsubparser $ mconcat
   [ command "add"
       $ info parseAddCommand
       $ progDesc "Add task" <> forwardOptions
-  , command "remove"
-      $ info parseRemoveCommand
-      $ progDesc "Remove task"
+  , command "delete"
+      $ info parseDeleteCommand
+      $ progDesc "Delete task"
   , command "list"
       $ info parseListCommand
       $ progDesc "List tasks"
