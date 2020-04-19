@@ -39,7 +39,6 @@ executable miel
     , optparse-applicative
     , selda
     , selda-sqlite
-    , sqlite-simple
   ghc-options:
     -threaded
     -rtsopts
