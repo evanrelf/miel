@@ -37,6 +37,8 @@ executable miel
   main-is: Main.hs
   build-depends:
     , optparse-applicative
+    , random
+    , sqlite-simple
   ghc-options:
     -threaded
     -rtsopts
