@@ -20,5 +20,22 @@ let
     import ./nix/nixpkgs.nix {
       overlays = [ haskellPackagesOverlay ];
     };
+
+
+  miel = pkgs.haskellPackages.miel;
+
+
+  shell =
+    miel.env.overrideAttrs (old: {
+      buildInputs = old.buildInputs ++ (with pkgs; [
+        cabal-install
+        ghcid
+        hlint
+      ]);
+    });
 in
-  pkgs.haskellPackages.miel
+  { inherit
+      miel
+      shell
+    ;
+  }
