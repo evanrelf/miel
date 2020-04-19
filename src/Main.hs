@@ -61,9 +61,9 @@ parseList = pure List
 
 parseCommand :: OA.Parser Command
 parseCommand = OA.hsubparser $ mconcat
-  [ OA.command "add" (OA.info parseAdd mempty)
-  , OA.command "remove" (OA.info parseRemove mempty)
-  , OA.command "list" (OA.info parseList mempty)
+  [ OA.command "add" (OA.info parseAdd (OA.progDesc "Add task"))
+  , OA.command "remove" (OA.info parseRemove (OA.progDesc "Remove task"))
+  , OA.command "list" (OA.info parseList (OA.progDesc "List tasks"))
   ]
 
 
