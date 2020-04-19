@@ -25,7 +25,7 @@ let
   miel = pkgs.haskellPackages.miel;
 
 
-  executable = pkgs.lib.haskell.justStaticExecutables miel;
+  executable = pkgs.haskell.lib.justStaticExecutables miel;
 
 
   shell =
