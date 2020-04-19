@@ -25,6 +25,9 @@ let
   miel = pkgs.haskellPackages.miel;
 
 
+  executable = pkgs.lib.haskell.justStaticExecutables miel;
+
+
   shell =
     miel.env.overrideAttrs (old: {
       buildInputs = old.buildInputs ++ (with pkgs; [
@@ -36,6 +39,7 @@ let
 in
   { inherit
       miel
+      executable
       shell
     ;
   }
