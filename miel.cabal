@@ -18,6 +18,12 @@ common common
     , relude (Relude as Prelude)
   default-language: Haskell2010
   default-extensions:
+    BlockArguments
+    DeriveAnyClass
+    DeriveGeneric
+    DerivingStrategies
+    GeneralizedNewtypeDeriving
+    LambdaCase
     OverloadedStrings
   ghc-options:
     -Wall
