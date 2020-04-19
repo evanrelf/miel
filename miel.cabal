@@ -11,8 +11,8 @@ copyright:  2020 Evan Relf
 
 common common
   build-depends:
-    , base
-    , relude
+    , base   ^>= 4.12.0
+    , relude ^>= 0.5.0
   mixins:
     , base hiding (Prelude)
     , relude (Relude as Prelude)
@@ -53,6 +53,6 @@ executable miel
   other-modules:
     Options
   build-depends:
-    , optparse-applicative
-    , selda
-    , selda-sqlite
+    , optparse-applicative ^>= 0.14.3
+    , selda                ^>= 0.4.0
+    , selda-sqlite         ^>= 0.1.7
