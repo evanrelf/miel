@@ -34,6 +34,7 @@ let
         cabal-install
         ghcid
         hlint
+        sqlite
       ]);
     });
 in
