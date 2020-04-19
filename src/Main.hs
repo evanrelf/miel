@@ -1,3 +1,4 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -5,6 +6,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 
 module Main (main) where
@@ -29,8 +31,13 @@ data Status = Open | Closed
   deriving anyclass Selda.SqlType
 
 
-data Options = Options Command
+data Options = Options Settings Command
   deriving stock Show
+
+
+data Settings = Settings
+  { database :: FilePath
+  } deriving stock Show
 
 
 data Command
@@ -60,8 +67,20 @@ parseCommand = OA.hsubparser $ mconcat
   ]
 
 
+parseSettings :: OA.Parser Settings
+parseSettings = do
+  database <- OA.strOption $ mconcat
+    [ OA.metavar "PATH"
+    , OA.help "Path to SQLite database"
+    , OA.long "database"
+    , OA.short 'd'
+    , OA.value "miel.sqlite3"
+    ]
+  pure Settings{..}
+
+
 parseOptions :: OA.Parser Options
-parseOptions = Options <$> parseCommand
+parseOptions = Options <$> parseSettings <*> parseCommand
 
 
 getOptions :: IO Options
@@ -74,24 +93,23 @@ tasks = Selda.table "tasks" [ #id :- Selda.autoPrimary ]
 
 main :: IO ()
 main = do
-  let sqlite = "miel.sqlite3"
-  Options command <- getOptions
+  Options Settings{..} command <- getOptions
   case command of
     Add description ->
-      Selda.withSQLite sqlite do
+      Selda.withSQLite database do
         Selda.tryCreateTable tasks
         Selda.insert_ tasks
           [ Task{ id = Selda.def, description, status = Open }
           ]
 
     Remove (Selda.toId -> id) ->
-      Selda.withSQLite sqlite do
+      Selda.withSQLite database do
         Selda.tryCreateTable tasks
         rows <- Selda.deleteFrom tasks (#id `Selda.is` id)
         putTextLn ("Deleted " <> show rows <> " rows")
 
     List ->
-      Selda.withSQLite sqlite do
+      Selda.withSQLite database do
         Selda.tryCreateTable tasks
         Selda.query (Selda.select tasks) >>= mapM_ print
 
