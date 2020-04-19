@@ -1,9 +1,7 @@
-{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -14,7 +12,7 @@ module Main (main) where
 import qualified Database.Selda as Selda
 import Database.Selda (Attr ((:-)))
 import qualified Database.Selda.SQLite as Selda
-import qualified Options.Applicative as OA
+import Options (Command (..), Options (..), Settings (..), getOptions)
 import Prelude hiding (id)
 
 
@@ -28,67 +26,6 @@ data Task = Task
 data Status = Open | Closed
   deriving stock (Generic, Enum, Bounded, Read, Show)
   deriving anyclass Selda.SqlType
-
-
-data Options = Options Settings Command
-  deriving stock Show
-
-
-data Settings = Settings
-  { database :: FilePath
-  } deriving stock Show
-
-
-data Command
-  = Add Text
-  | Remove Int
-  | List
-  deriving stock Show
-
-
-parseAdd :: OA.Parser Command
-parseAdd = Add . unwords <$> some (OA.strArgument (OA.metavar "DESCRIPTION"))
-
-
-parseRemove :: OA.Parser Command
-parseRemove = Remove <$> OA.argument OA.auto (OA.metavar "ID")
-
-
-parseList :: OA.Parser Command
-parseList = pure List
-
-
-parseCommand :: OA.Parser Command
-parseCommand = OA.hsubparser $ mconcat
-  [ OA.command "add" (OA.info parseAdd (OA.progDesc "Add task" <> OA.forwardOptions))
-  , OA.command "remove" (OA.info parseRemove (OA.progDesc "Remove task"))
-  , OA.command "list" (OA.info parseList (OA.progDesc "List tasks"))
-  ]
-
-
-parseSettings :: OA.Parser Settings
-parseSettings = do
-  database <- OA.strOption $ mconcat
-    [ OA.metavar "PATH"
-    , OA.help "Path to SQLite database"
-    , OA.long "database"
-    , OA.short 'd'
-    , OA.value "miel.sqlite3"
-    , OA.hidden
-    ]
-  pure Settings{..}
-
-
-parseOptions :: OA.Parser Options
-parseOptions = Options <$> parseSettings <*> parseCommand
-
-
-getOptions :: IO Options
-getOptions = do
-  let parser = OA.helper <*> parseOptions
-  let infoMod = mempty
-  let prefsMod = OA.showHelpOnError
-  OA.customExecParser (OA.prefs prefsMod) (OA.info parser infoMod)
 
 
 tasks :: Selda.Table Task

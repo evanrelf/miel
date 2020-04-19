@@ -44,6 +44,8 @@ executable miel
   import: common, executable
   hs-source-dirs: src
   main-is: Main.hs
+  other-modules:
+    Options
   build-depends:
     , optparse-applicative
     , selda
