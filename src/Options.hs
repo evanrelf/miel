@@ -28,23 +28,23 @@ data Command
   deriving stock Show
 
 
-parseAdd :: Parser Command
-parseAdd = Add . unwords <$> some (strArgument (metavar "DESCRIPTION"))
+parseAddCommand :: Parser Command
+parseAddCommand = Add . unwords <$> some (strArgument (metavar "DESCRIPTION"))
 
 
-parseRemove :: Parser Command
-parseRemove = Remove <$> argument auto (metavar "ID")
+parseRemoveCommand :: Parser Command
+parseRemoveCommand = Remove <$> argument auto (metavar "ID")
 
 
-parseList :: Parser Command
-parseList = pure List
+parseListCommand :: Parser Command
+parseListCommand = pure List
 
 
 parseCommand :: Parser Command
 parseCommand = hsubparser $ mconcat
-  [ command "add" (info parseAdd (progDesc "Add task" <> forwardOptions))
-  , command "remove" (info parseRemove (progDesc "Remove task"))
-  , command "list" (info parseList (progDesc "List tasks"))
+  [ command "add" (info parseAddCommand (progDesc "Add task" <> forwardOptions))
+  , command "remove" (info parseRemoveCommand (progDesc "Remove task"))
+  , command "list" (info parseListCommand (progDesc "List tasks"))
   ]
 
 
