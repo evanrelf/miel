@@ -5,6 +5,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Main (main) where
 
@@ -35,6 +36,7 @@ data Options = Options Command
 data Command
   = Add Text
   | List
+  | Remove Int
   deriving stock Show
 
 
@@ -42,10 +44,15 @@ parseAdd :: OA.Parser Command
 parseAdd = Add . unwords <$> some (OA.strArgument (OA.metavar "DESCRIPTION"))
 
 
+parseRemove :: OA.Parser Command
+parseRemove = Remove <$> OA.argument OA.auto (OA.metavar "ID")
+
+
 parseCommand :: OA.Parser Command
 parseCommand = OA.hsubparser $ mconcat
   [ OA.command "add" (OA.info parseAdd mempty)
   , OA.command "list" (OA.info (pure List) mempty)
+  , OA.command "remove" (OA.info parseRemove mempty)
   ]
 
 
@@ -77,3 +84,9 @@ main = do
       Selda.withSQLite sqlite do
         Selda.tryCreateTable tasks
         Selda.query (Selda.select tasks) >>= mapM_ print
+
+    Remove (Selda.toId -> id) ->
+      Selda.withSQLite sqlite do
+        Selda.tryCreateTable tasks
+        rows <- Selda.deleteFrom tasks (#id `Selda.is` id)
+        putTextLn ("Deleted " <> show rows <> " rows")
