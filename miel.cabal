@@ -38,6 +38,8 @@ executable miel
   build-depends:
     , optparse-applicative
     , random
+    , selda
+    , selda-sqlite
     , sqlite-simple
   ghc-options:
     -threaded
