@@ -21,7 +21,6 @@ import Prelude hiding (id)
 data Task = Task
   { id :: Selda.ID Task
   , description :: Text
-  , status :: Status
   } deriving stock (Generic, Show)
     deriving anyclass Selda.SqlRow
 
@@ -100,7 +99,7 @@ main = do
       Selda.withSQLite database do
         Selda.tryCreateTable tasks
         Selda.insert_ tasks
-          [ Task{ id = Selda.def, description, status = Open }
+          [ Task{ id = Selda.def, description }
           ]
 
     Remove (Selda.toId -> id) ->
