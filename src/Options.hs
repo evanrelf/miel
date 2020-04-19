@@ -42,9 +42,15 @@ parseListCommand = pure List
 
 parseCommand :: Parser Command
 parseCommand = hsubparser $ mconcat
-  [ command "add" (info parseAddCommand (progDesc "Add task" <> forwardOptions))
-  , command "remove" (info parseRemoveCommand (progDesc "Remove task"))
-  , command "list" (info parseListCommand (progDesc "List tasks"))
+  [ command "add"
+      $ info parseAddCommand
+      $ progDesc "Add task" <> forwardOptions
+  , command "remove"
+      $ info parseRemoveCommand
+      $ progDesc "Remove task"
+  , command "list"
+      $ info parseListCommand
+      $ progDesc "List tasks"
   ]
 
 
