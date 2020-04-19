@@ -37,7 +37,6 @@ executable miel
   main-is: Main.hs
   build-depends:
     , optparse-applicative
-    , random
     , selda
     , selda-sqlite
     , sqlite-simple

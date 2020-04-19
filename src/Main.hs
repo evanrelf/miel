@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedLabels #-}
 
@@ -11,12 +12,11 @@ import qualified Database.Selda as Selda
 import Database.Selda (Attr ((:-)))
 import qualified Database.Selda.SQLite as Selda
 import qualified Options.Applicative as OA
-import qualified System.Random as Random
 import Prelude hiding (id)
 
 
 data Task = Task
-  { id :: Int
+  { id :: Selda.ID Task
   , description :: Text
   , status :: Status
   } deriving stock (Generic, Show)
@@ -30,6 +30,7 @@ data Status = Open | Closed
 
 data Options
   = Add Text
+  | Query
   deriving Show
 
 
@@ -40,6 +41,7 @@ parseAdd = unwords <$> some (OA.strArgument (OA.metavar "DESCRIPTION"))
 parseOptions :: OA.Parser Options
 parseOptions = OA.hsubparser $ mconcat
   [ OA.command "add" (OA.info (Add <$> parseAdd) mempty)
+  , OA.command "query" (OA.info (pure Query) mempty)
   ]
 
 
@@ -48,16 +50,21 @@ getOptions = OA.execParser (OA.info (OA.helper <*> parseOptions) mempty)
 
 
 tasks :: Selda.Table Task
-tasks = Selda.table "tasks" [ #id :- Selda.primary ]
+tasks = Selda.table "tasks" [ #id :- Selda.autoPrimary ]
 
 
 main :: IO ()
 main = do
-  Add description <- getOptions
-  id <- Random.randomRIO (1, 999)
-  let cliTask = Task{ id, description, status = Open }
-  Selda.withSQLite "miel.db" do
-    Selda.tryCreateTable tasks
-    Selda.insert_ tasks [ cliTask ]
-    results <- Selda.query (Selda.select tasks)
-    mapM_ print results
+  let sqlite = "miel.sqlite3"
+  getOptions >>= \case
+    Add description ->
+      Selda.withSQLite sqlite do
+        Selda.tryCreateTable tasks
+        Selda.insert_ tasks
+          [ Task{ id = Selda.def, description, status = Open }
+          ]
+
+    Query ->
+      Selda.withSQLite sqlite do
+        Selda.tryCreateTable tasks
+        Selda.query (Selda.select tasks) >>= mapM_ print
