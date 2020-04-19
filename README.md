@@ -1,4 +1,6 @@
-# miel
+# miel 🍯
+
+A sweet little task manager
 
 ## Related projects
 
