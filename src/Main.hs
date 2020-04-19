@@ -84,7 +84,11 @@ parseOptions = Options <$> parseSettings <*> parseCommand
 
 
 getOptions :: IO Options
-getOptions = OA.execParser (OA.info (OA.helper <*> parseOptions) mempty)
+getOptions = do
+  let parser = OA.helper <*> parseOptions
+  let infoMod = mempty
+  let prefsMod = OA.showHelpOnError
+  OA.customExecParser (OA.prefs prefsMod) (OA.info parser infoMod)
 
 
 tasks :: Selda.Table Task
