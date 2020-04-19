@@ -28,21 +28,29 @@ data Status = Open | Closed
   deriving anyclass Selda.SqlType
 
 
-data Options
+data Options = Options Command
+  deriving stock Show
+
+
+data Command
   = Add Text
   | Query
-  deriving Show
+  deriving stock Show
 
 
-parseAdd :: OA.Parser Text
-parseAdd = unwords <$> some (OA.strArgument (OA.metavar "DESCRIPTION"))
+parseAdd :: OA.Parser Command
+parseAdd = Add . unwords <$> some (OA.strArgument (OA.metavar "DESCRIPTION"))
+
+
+parseCommand :: OA.Parser Command
+parseCommand = OA.hsubparser $ mconcat
+  [ OA.command "add" (OA.info parseAdd mempty)
+  , OA.command "query" (OA.info (pure Query) mempty)
+  ]
 
 
 parseOptions :: OA.Parser Options
-parseOptions = OA.hsubparser $ mconcat
-  [ OA.command "add" (OA.info (Add <$> parseAdd) mempty)
-  , OA.command "query" (OA.info (pure Query) mempty)
-  ]
+parseOptions = Options <$> parseCommand
 
 
 getOptions :: IO Options
@@ -56,7 +64,8 @@ tasks = Selda.table "tasks" [ #id :- Selda.autoPrimary ]
 main :: IO ()
 main = do
   let sqlite = "miel.sqlite3"
-  getOptions >>= \case
+  Options command <- getOptions
+  case command of
     Add description ->
       Selda.withSQLite sqlite do
         Selda.tryCreateTable tasks
