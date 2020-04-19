@@ -44,6 +44,10 @@ parseAdd :: OA.Parser Command
 parseAdd = Add . unwords <$> some (OA.strArgument (OA.metavar "DESCRIPTION"))
 
 
+parseList :: OA.Parser Command
+parseList = pure List
+
+
 parseRemove :: OA.Parser Command
 parseRemove = Remove <$> OA.argument OA.auto (OA.metavar "ID")
 
@@ -51,7 +55,7 @@ parseRemove = Remove <$> OA.argument OA.auto (OA.metavar "ID")
 parseCommand :: OA.Parser Command
 parseCommand = OA.hsubparser $ mconcat
   [ OA.command "add" (OA.info parseAdd mempty)
-  , OA.command "list" (OA.info (pure List) mempty)
+  , OA.command "list" (OA.info parseList mempty)
   , OA.command "remove" (OA.info parseRemove mempty)
   ]
 
