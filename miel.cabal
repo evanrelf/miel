@@ -8,6 +8,7 @@ homepage:   https://github.com/evanrelf/miel
 license:    ISC
 copyright:  2020 Evan Relf
 
+
 common common
   build-depends:
     , base
@@ -31,15 +32,19 @@ common common
     -foptimal-applicative-do
     -fshow-warning-groups
 
+
+common executable
+  ghc-options:
+    -threaded
+    -rtsopts
+    -with-rtsopts=-N
+
+
 executable miel
-  import: common
+  import: common, executable
   hs-source-dirs: src
   main-is: Main.hs
   build-depends:
     , optparse-applicative
     , selda
     , selda-sqlite
-  ghc-options:
-    -threaded
-    -rtsopts
-    -with-rtsopts=-N
