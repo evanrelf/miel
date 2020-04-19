@@ -35,8 +35,8 @@ data Options = Options Command
 
 data Command
   = Add Text
-  | List
   | Remove Int
+  | List
   deriving stock Show
 
 
@@ -44,19 +44,19 @@ parseAdd :: OA.Parser Command
 parseAdd = Add . unwords <$> some (OA.strArgument (OA.metavar "DESCRIPTION"))
 
 
-parseList :: OA.Parser Command
-parseList = pure List
-
-
 parseRemove :: OA.Parser Command
 parseRemove = Remove <$> OA.argument OA.auto (OA.metavar "ID")
+
+
+parseList :: OA.Parser Command
+parseList = pure List
 
 
 parseCommand :: OA.Parser Command
 parseCommand = OA.hsubparser $ mconcat
   [ OA.command "add" (OA.info parseAdd mempty)
-  , OA.command "list" (OA.info parseList mempty)
   , OA.command "remove" (OA.info parseRemove mempty)
+  , OA.command "list" (OA.info parseList mempty)
   ]
 
 
@@ -84,13 +84,14 @@ main = do
           [ Task{ id = Selda.def, description, status = Open }
           ]
 
-    List ->
-      Selda.withSQLite sqlite do
-        Selda.tryCreateTable tasks
-        Selda.query (Selda.select tasks) >>= mapM_ print
-
     Remove (Selda.toId -> id) ->
       Selda.withSQLite sqlite do
         Selda.tryCreateTable tasks
         rows <- Selda.deleteFrom tasks (#id `Selda.is` id)
         putTextLn ("Deleted " <> show rows <> " rows")
+
+    List ->
+      Selda.withSQLite sqlite do
+        Selda.tryCreateTable tasks
+        Selda.query (Selda.select tasks) >>= mapM_ print
+
