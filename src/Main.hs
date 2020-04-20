@@ -1,6 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 
 module Main (main) where
@@ -32,11 +33,11 @@ instance Pretty Task where
         locale = Time.defaultTimeLocale
         format = Time.iso8601DateFormat (Just "%H:%M:%SZ")
     in
-    Pretty.concatWith (Pretty.surround " | ") . fmap pretty $
-      [ show id
-      , description
-      , formatRfc3339 created
-      , formatRfc3339 modified
+    Pretty.concatWith (Pretty.surround " | ")
+      [ Pretty.fill 3 . pretty . show @Text $ id
+      , pretty (formatRfc3339 created)
+      , pretty (formatRfc3339 modified)
+      , pretty (description)
       ]
 
 
