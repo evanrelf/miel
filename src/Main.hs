@@ -26,11 +26,17 @@ data Task = Task
 
 instance Pretty Task where
   pretty Task{..} =
+    let
+      formatRfc3339 :: Time.FormatTime t => t -> Text
+      formatRfc3339 = toText . Time.formatTime locale format where
+        locale = Time.defaultTimeLocale
+        format = Time.iso8601DateFormat (Just "%H:%M:%SZ")
+    in
     Pretty.hsep . fmap pretty $
       [ show id
       , description
-      , show created
-      , show modified
+      , formatRfc3339 created
+      , formatRfc3339 modified
       ]
 
 
