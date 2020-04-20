@@ -26,14 +26,14 @@ data Task = Task
     deriving anyclass Selda.SqlRow
 
 
+formatRfc3339 :: Time.FormatTime t => t -> Text
+formatRfc3339 = toText . Time.formatTime locale format where
+  locale = Time.defaultTimeLocale
+  format = Time.iso8601DateFormat (Just "%H:%M:%SZ")
+
+
 instance Pretty Task where
   pretty Task{..} =
-    let
-      formatRfc3339 :: Time.FormatTime t => t -> Text
-      formatRfc3339 = toText . Time.formatTime locale format where
-        locale = Time.defaultTimeLocale
-        format = Time.iso8601DateFormat (Just "%H:%M:%SZ")
-    in
     Pretty.concatWith (Pretty.surround " | ")
       [ Pretty.fill 3 . pretty . show @Text $ id
       , pretty (formatRfc3339 created)
