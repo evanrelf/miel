@@ -21,6 +21,7 @@ data Task = Task
   , description :: Text
   , created :: Time.UTCTime
   , modified :: Time.UTCTime
+  , due :: Maybe Time.UTCTime
   } deriving stock (Generic, Show)
     deriving anyclass Selda.SqlRow
 
@@ -37,6 +38,7 @@ instance Pretty Task where
       [ Pretty.fill 3 . pretty . show @Text $ id
       , pretty (formatRfc3339 created)
       , pretty (formatRfc3339 modified)
+      , Pretty.fill 20 . pretty . maybe "n/a" formatRfc3339 $ due
       , pretty (description)
       ]
 
@@ -59,7 +61,13 @@ main = do
       Selda.withSQLite database do
         Selda.tryCreateTable tasksTable
         Selda.insert_ tasksTable
-          [ Task{ id = Selda.def, description, created = now, modified = now }
+          [ Task
+              { id = Selda.def
+              , description
+              , created = now
+              , modified = now
+              , due = Nothing
+              }
           ]
 
     Delete (Selda.toId -> id) ->
@@ -72,5 +80,5 @@ main = do
       Selda.withSQLite database do
         Selda.tryCreateTable tasksTable
         tasks <- Selda.query (Selda.select tasksTable)
-        putTextLn "ID  | Created              | Modified             | Description"
+        putTextLn "ID  | Created              | Modified             | Due                  | Description"
         mapM_ (print . pretty) tasks
