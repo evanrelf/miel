@@ -7,7 +7,8 @@
 module Main (main) where
 
 import qualified Data.Text.Prettyprint.Doc as Pretty
-import Data.Text.Prettyprint.Doc (Pretty (..))
+import Data.Text.Prettyprint.Doc ((<+>), Pretty (..))
+import qualified Data.Text.Prettyprint.Doc.Util as Pretty
 import qualified Data.Time as Time
 import qualified Database.Selda as Selda
 import Database.Selda (Attr ((:-)))
@@ -40,6 +41,17 @@ prettyTaskRow Task{..} =
     , pretty (formatRfc3339 modified)
     , Pretty.fill 20 . pretty . maybe "n/a" formatRfc3339 $ due
     , pretty (description)
+    ]
+
+
+prettyTaskDetail :: Task -> Pretty.Doc ann
+prettyTaskDetail Task{..} =
+  Pretty.vsep
+    [ Pretty.fill 11 "ID" <+> pretty (show @Text id)
+    , Pretty.fill 11 "Description" <+> Pretty.align (Pretty.reflow description)
+    , Pretty.fill 11 "Created" <+> pretty (formatRfc3339 created)
+    , Pretty.fill 11 "Modified" <+> pretty (formatRfc3339 modified)
+    , Pretty.fill 11 "Due" <+> pretty (maybe "n/a" formatRfc3339 due)
     ]
 
 
@@ -84,7 +96,7 @@ main = do
           Selda.restrict (task & #id `Selda.is` id)
           pure task
         case tasks of
-          [task] -> print (prettyTaskRow task)
+          [task] -> print (prettyTaskDetail task)
           [] -> die "Task not found"
           _ -> die ("Expected 1 row, but received " <> show (length tasks))
 
