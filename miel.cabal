@@ -56,3 +56,4 @@ executable miel
     , optparse-applicative ^>= 0.14.3
     , selda                ^>= 0.4.0
     , selda-sqlite         ^>= 0.1.7
+    , time                 ^>= 1.8.0

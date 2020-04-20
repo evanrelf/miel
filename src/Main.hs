@@ -5,6 +5,7 @@
 
 module Main (main) where
 
+import qualified Data.Time as Time
 import qualified Database.Selda as Selda
 import Database.Selda (Attr ((:-)))
 import qualified Database.Selda.SQLite as Selda
@@ -15,6 +16,8 @@ import Prelude hiding (id)
 data Task = Task
   { id :: Selda.ID Task
   , description :: Text
+  , created :: Time.UTCTime
+  , modified :: Time.UTCTime
   } deriving stock (Generic, Show)
     deriving anyclass Selda.SqlRow
 
@@ -32,11 +35,12 @@ main :: IO ()
 main = do
   Options Settings{..} command <- getOptions
   case command of
-    Add description ->
+    Add description -> do
+      now <- Time.getCurrentTime
       Selda.withSQLite database do
         Selda.tryCreateTable tasks
         Selda.insert_ tasks
-          [ Task{ id = Selda.def, description }
+          [ Task{ id = Selda.def, description, created = now, modified = now }
           ]
 
     Delete (Selda.toId -> id) ->
