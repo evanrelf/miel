@@ -71,4 +71,6 @@ main = do
     List ->
       Selda.withSQLite database do
         Selda.tryCreateTable tasksTable
-        Selda.query (Selda.select tasksTable) >>= mapM_ (print . pretty)
+        tasks <- Selda.query (Selda.select tasksTable)
+        putTextLn "ID  | Created              | Modified             | Description"
+        mapM_ (print . pretty) tasks
