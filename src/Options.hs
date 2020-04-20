@@ -62,6 +62,7 @@ parseSettings = do
     , long "database"
     , short 'd'
     , value "miel.sqlite3"
+    , showDefault
     , hidden
     ]
   pure Settings{..}
