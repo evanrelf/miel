@@ -46,8 +46,8 @@ data Status = Open | Closed
   deriving anyclass Selda.SqlType
 
 
-tasks :: Selda.Table Task
-tasks = Selda.table "tasks" [ #id :- Selda.autoPrimary ]
+tasksTable :: Selda.Table Task
+tasksTable = Selda.table "tasks" [ #id :- Selda.autoPrimary ]
 
 
 main :: IO ()
@@ -57,18 +57,18 @@ main = do
     Add description -> do
       now <- Time.getCurrentTime
       Selda.withSQLite database do
-        Selda.tryCreateTable tasks
-        Selda.insert_ tasks
+        Selda.tryCreateTable tasksTable
+        Selda.insert_ tasksTable
           [ Task{ id = Selda.def, description, created = now, modified = now }
           ]
 
     Delete (Selda.toId -> id) ->
       Selda.withSQLite database do
-        Selda.tryCreateTable tasks
-        rows <- Selda.deleteFrom tasks (#id `Selda.is` id)
+        Selda.tryCreateTable tasksTable
+        rows <- Selda.deleteFrom tasksTable (#id `Selda.is` id)
         putTextLn ("Deleted " <> show rows <> " rows")
 
     List ->
       Selda.withSQLite database do
-        Selda.tryCreateTable tasks
-        Selda.query (Selda.select tasks) >>= mapM_ (print . pretty)
+        Selda.tryCreateTable tasksTable
+        Selda.query (Selda.select tasksTable) >>= mapM_ (print . pretty)
