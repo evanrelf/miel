@@ -32,7 +32,7 @@ instance Pretty Task where
         locale = Time.defaultTimeLocale
         format = Time.iso8601DateFormat (Just "%H:%M:%SZ")
     in
-    Pretty.hsep . fmap pretty $
+    Pretty.concatWith (Pretty.surround " | ") . fmap pretty $
       [ show id
       , description
       , formatRfc3339 created
