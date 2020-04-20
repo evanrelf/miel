@@ -76,6 +76,18 @@ main = do
         rows <- Selda.deleteFrom tasksTable (#id `Selda.is` id)
         putTextLn ("Deleted " <> show rows <> " rows")
 
+    Show (Selda.toId -> id) -> do
+      Selda.withSQLite database do
+        Selda.tryCreateTable tasksTable
+        tasks <- Selda.query do
+          task <- Selda.select tasksTable
+          Selda.restrict (task & #id `Selda.is` id)
+          pure task
+        case tasks of
+          [task] -> print (pretty task)
+          [] -> die "Task not found"
+          _ -> die ("Expected 1 row, but received " <> show (length tasks))
+
     List ->
       Selda.withSQLite database do
         Selda.tryCreateTable tasksTable
