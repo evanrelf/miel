@@ -40,7 +40,7 @@ prettyTaskRow Task{..} =
     , pretty (formatRfc3339 created)
     , pretty (formatRfc3339 modified)
     , Pretty.fill 20 . pretty . maybe "n/a" formatRfc3339 $ due
-    , pretty (description)
+    , pretty description
     ]
 
 

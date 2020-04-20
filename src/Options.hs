@@ -16,7 +16,7 @@ data Options = Options Settings Command
   deriving stock Show
 
 
-data Settings = Settings
+newtype Settings = Settings
   { database :: FilePath
   } deriving stock Show
 
