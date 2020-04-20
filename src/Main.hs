@@ -64,14 +64,19 @@ tasksTable :: Selda.Table Task
 tasksTable = Selda.table "tasks" [ #id :- Selda.autoPrimary ]
 
 
+initialize :: FilePath -> IO ()
+initialize database =
+  Selda.withSQLite database (Selda.tryCreateTable tasksTable)
+
+
 main :: IO ()
 main = do
   Options Settings{..} command <- getOptions
+  initialize database
   case command of
     Add description -> do
       now <- Time.getCurrentTime
       Selda.withSQLite database do
-        Selda.tryCreateTable tasksTable
         Selda.insert_ tasksTable
           [ Task
               { id = Selda.def
@@ -84,13 +89,11 @@ main = do
 
     Delete (Selda.toId -> id) ->
       Selda.withSQLite database do
-        Selda.tryCreateTable tasksTable
         rows <- Selda.deleteFrom tasksTable (#id `Selda.is` id)
         putTextLn ("Deleted " <> show rows <> " rows")
 
     Show (Selda.toId -> id) -> do
       Selda.withSQLite database do
-        Selda.tryCreateTable tasksTable
         tasks <- Selda.query do
           task <- Selda.select tasksTable
           Selda.restrict (task & #id `Selda.is` id)
@@ -102,7 +105,6 @@ main = do
 
     List ->
       Selda.withSQLite database do
-        Selda.tryCreateTable tasksTable
         tasks <- Selda.query (Selda.select tasksTable)
         putTextLn "ID  | CREATED              | MODIFIED             | DUE                  | DESCRIPTION"
         mapM_ (print . prettyTaskRow) tasks
