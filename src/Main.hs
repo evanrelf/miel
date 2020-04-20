@@ -5,6 +5,8 @@
 
 module Main (main) where
 
+import qualified Data.Text.Prettyprint.Doc as Pretty
+import Data.Text.Prettyprint.Doc (Pretty (..))
 import qualified Data.Time as Time
 import qualified Database.Selda as Selda
 import Database.Selda (Attr ((:-)))
@@ -20,6 +22,16 @@ data Task = Task
   , modified :: Time.UTCTime
   } deriving stock (Generic, Show)
     deriving anyclass Selda.SqlRow
+
+
+instance Pretty Task where
+  pretty Task{..} =
+    Pretty.hsep . fmap pretty $
+      [ show id
+      , description
+      , show created
+      , show modified
+      ]
 
 
 data Status = Open | Closed
@@ -52,4 +64,4 @@ main = do
     List ->
       Selda.withSQLite database do
         Selda.tryCreateTable tasks
-        Selda.query (Selda.select tasks) >>= mapM_ print
+        Selda.query (Selda.select tasks) >>= mapM_ (print . pretty)
