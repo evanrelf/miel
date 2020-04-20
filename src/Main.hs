@@ -32,15 +32,15 @@ formatRfc3339 = toText . Time.formatTime locale format where
   format = Time.iso8601DateFormat (Just "%H:%M:%SZ")
 
 
-instance Pretty Task where
-  pretty Task{..} =
-    Pretty.concatWith (Pretty.surround " | ")
-      [ Pretty.fill 3 . pretty . show @Text $ id
-      , pretty (formatRfc3339 created)
-      , pretty (formatRfc3339 modified)
-      , Pretty.fill 20 . pretty . maybe "n/a" formatRfc3339 $ due
-      , pretty (description)
-      ]
+prettyTaskRow :: Task -> Pretty.Doc ann
+prettyTaskRow Task{..} =
+  Pretty.concatWith (Pretty.surround " | ")
+    [ Pretty.fill 3 . pretty . show @Text $ id
+    , pretty (formatRfc3339 created)
+    , pretty (formatRfc3339 modified)
+    , Pretty.fill 20 . pretty . maybe "n/a" formatRfc3339 $ due
+    , pretty (description)
+    ]
 
 
 data Status = Open | Closed
@@ -84,7 +84,7 @@ main = do
           Selda.restrict (task & #id `Selda.is` id)
           pure task
         case tasks of
-          [task] -> print (pretty task)
+          [task] -> print (prettyTaskRow task)
           [] -> die "Task not found"
           _ -> die ("Expected 1 row, but received " <> show (length tasks))
 
@@ -93,4 +93,4 @@ main = do
         Selda.tryCreateTable tasksTable
         tasks <- Selda.query (Selda.select tasksTable)
         putTextLn "ID  | CREATED              | MODIFIED             | DUE                  | DESCRIPTION"
-        mapM_ (print . pretty) tasks
+        mapM_ (print . prettyTaskRow) tasks
