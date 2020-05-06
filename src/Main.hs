@@ -58,7 +58,7 @@ prettyTaskDetail Task{..} =
 
 rowHeading :: Pretty.Doc Ansi.AnsiStyle
 rowHeading = Pretty.annotate Ansi.underlined
-  "ID  │ CREATED              │ MODIFIED             │ DUE                  │ DESCRIPTION"
+  "ID  │ Created              │ Modified             │ Due                  │ Description"
 
 
 data Status = Open | Closed
