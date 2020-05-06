@@ -7,6 +7,7 @@
 
 module Main (main) where
 
+import qualified Data.Char as Char
 import qualified Data.Text.Prettyprint.Doc as Pretty
 import Data.Text.Prettyprint.Doc ((<+>), Pretty (..))
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as Ansi
@@ -17,7 +18,8 @@ import Database.Selda (Attr ((:-)))
 import qualified Database.Selda.SQLite as Selda
 import Options (Command (..), Options (..), Settings (..), getOptions)
 import System.IO (hPutStrLn)
-import Text.Megaparsec
+import Text.Megaparsec (Parsec, eof, errorBundlePretty, parse, satisfy, sepBy1)
+import Text.Megaparsec.Char (space, space1, string)
 import Prelude hiding (id)
 
 
@@ -32,6 +34,11 @@ data Task = Task
   , due :: Maybe Time.UTCTime
   } deriving stock (Generic, Show)
     deriving anyclass Selda.SqlRow
+
+
+data InputTime
+  = Now
+  deriving stock Show
 
 
 formatIso8601 :: Time.FormatTime t => t -> Text
@@ -73,8 +80,23 @@ rowHeading = Pretty.annotate Ansi.underlined
   "ID  │ Created    │ Modified   │ Due                  │ Description"
 
 
-inputParser ::Parser (Text, Maybe Time.UTCTime)
-inputParser = (, Nothing) <$> takeRest
+timeParser :: Parser InputTime
+timeParser = string "due:" *> string "now" $> Now
+
+
+inputParser ::Parser (Text, Maybe InputTime)
+inputParser = do
+  space
+  (ws, ts) <- fmap partitionEithers $ flip sepBy1 space1 $ asum
+    [ Right <$> timeParser
+    , Left <$> toText <$> many (satisfy (\c -> Char.isPrint c && not (Char.isSpace c))) -- TODO
+    ]
+  space
+  void eof
+  if length ts > 1 then
+    fail "More than one due date"
+  else
+    pure (unwords ws, viaNonEmpty head ts)
 
 
 tasksTable :: Selda.Table Task
@@ -98,8 +120,12 @@ main = do
           hPutStrLn stderr (errorBundlePretty parseErrorBundle)
           exitFailure
 
-        Right (description, due) -> do
+        Right (description, dueInputTime) -> do
           now <- Time.getCurrentTime
+          let due =
+                case dueInputTime of
+                  Nothing -> Nothing
+                  Just Now -> Just now
           Selda.withSQLite database do
             Selda.insert_ tasksTable
               [ Task
