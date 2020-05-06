@@ -15,7 +15,12 @@ import qualified Database.Selda as Selda
 import Database.Selda (Attr ((:-)))
 import qualified Database.Selda.SQLite as Selda
 import Options (Command (..), Options (..), Settings (..), getOptions)
+import System.IO (hPutStrLn)
+import Text.Megaparsec
 import Prelude hiding (id)
+
+
+type Parser = Parsec Void Text
 
 
 data Task = Task
@@ -67,6 +72,10 @@ rowHeading = Pretty.annotate Ansi.underlined
   "ID  │ Created    │ Modified   │ Due                  │ Description"
 
 
+inputParser ::Parser Text
+inputParser = takeRest
+
+
 tasksTable :: Selda.Table Task
 tasksTable = Selda.table "tasks" [ #id :- Selda.autoPrimary ]
 
@@ -80,19 +89,26 @@ main :: IO ()
 main = do
   Options Settings{..} command <- getOptions
   initialize database
+
   case command of
-    Add description -> do
-      now <- Time.getCurrentTime
-      Selda.withSQLite database do
-        Selda.insert_ tasksTable
-          [ Task
-              { id = Selda.def
-              , description
-              , created = now
-              , modified = now
-              , due = Nothing
-              }
-          ]
+    Add input ->
+      case parse inputParser "input" input of
+        Left parseErrorBundle -> do
+          hPutStrLn stderr (errorBundlePretty parseErrorBundle)
+          exitFailure
+
+        Right description -> do
+          now <- Time.getCurrentTime
+          Selda.withSQLite database do
+            Selda.insert_ tasksTable
+              [ Task
+                  { id = Selda.def
+                  , description
+                  , created = now
+                  , modified = now
+                  , due = Nothing
+                  }
+              ]
 
     Delete (Selda.toId -> id) ->
       Selda.withSQLite database do

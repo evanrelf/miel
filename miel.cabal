@@ -53,6 +53,7 @@ executable miel
   other-modules:
     Options
   build-depends:
+    , megaparsec                  ^>= 7.0.5
     , optparse-applicative        ^>= 0.14.3
     , prettyprinter               ^>= 1.2.1
     , prettyprinter-ansi-terminal ^>= 1.1.1
