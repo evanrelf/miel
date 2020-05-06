@@ -28,6 +28,12 @@ data Task = Task
     deriving anyclass Selda.SqlRow
 
 
+formatIso8601 :: Time.FormatTime t => t -> Text
+formatIso8601 = toText . Time.formatTime locale format where
+  locale = Time.defaultTimeLocale
+  format = Time.iso8601DateFormat Nothing
+
+
 formatRfc3339 :: Time.FormatTime t => t -> Text
 formatRfc3339 = toText . Time.formatTime locale format where
   locale = Time.defaultTimeLocale
@@ -38,8 +44,8 @@ prettyTaskRow :: Task -> Pretty.Doc ann
 prettyTaskRow Task{..} =
   Pretty.concatWith (Pretty.surround " │ ")
     [ Pretty.fill 3 . pretty . show @Text $ id
-    , pretty (formatRfc3339 created)
-    , pretty (formatRfc3339 modified)
+    , pretty (formatIso8601 created)
+    , pretty (formatIso8601 modified)
     , Pretty.fill 20 . pretty . maybe "n/a" formatRfc3339 $ due
     , pretty description
     ]
@@ -58,7 +64,7 @@ prettyTaskDetail Task{..} =
 
 rowHeading :: Pretty.Doc Ansi.AnsiStyle
 rowHeading = Pretty.annotate Ansi.underlined
-  "ID  │ Created              │ Modified             │ Due                  │ Description"
+  "ID  │ Created    │ Modified   │ Due                  │ Description"
 
 
 data Status = Open | Closed
