@@ -35,7 +35,7 @@ formatRfc3339 = toText . Time.formatTime locale format where
 
 prettyTaskRow :: Task -> Pretty.Doc ann
 prettyTaskRow Task{..} =
-  Pretty.concatWith (Pretty.surround " | ")
+  Pretty.concatWith (Pretty.surround " │ ")
     [ Pretty.fill 3 . pretty . show @Text $ id
     , pretty (formatRfc3339 created)
     , pretty (formatRfc3339 modified)
@@ -106,5 +106,5 @@ main = do
     List ->
       Selda.withSQLite database do
         tasks <- Selda.query (Selda.select tasksTable)
-        putTextLn "ID  | CREATED              | MODIFIED             | DUE                  | DESCRIPTION"
+        putTextLn "ID  │ CREATED              │ MODIFIED             │ DUE                  │ DESCRIPTION"
         mapM_ (print . prettyTaskRow) tasks
