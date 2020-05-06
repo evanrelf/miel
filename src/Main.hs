@@ -97,7 +97,7 @@ main = do
     Delete (Selda.toId -> id) ->
       Selda.withSQLite database do
         rows <- Selda.deleteFrom tasksTable (#id `Selda.is` id)
-        putTextLn ("Deleted " <> show rows <> " rows")
+        putTextLn ("Deleted " <> show rows <> " row(s)")
 
     Show (Selda.toId -> id) -> do
       Selda.withSQLite database do
