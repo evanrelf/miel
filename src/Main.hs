@@ -1,6 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -72,8 +73,8 @@ rowHeading = Pretty.annotate Ansi.underlined
   "ID  │ Created    │ Modified   │ Due                  │ Description"
 
 
-inputParser ::Parser Text
-inputParser = takeRest
+inputParser ::Parser (Text, Maybe Time.UTCTime)
+inputParser = (, Nothing) <$> takeRest
 
 
 tasksTable :: Selda.Table Task
@@ -97,7 +98,7 @@ main = do
           hPutStrLn stderr (errorBundlePretty parseErrorBundle)
           exitFailure
 
-        Right description -> do
+        Right (description, due) -> do
           now <- Time.getCurrentTime
           Selda.withSQLite database do
             Selda.insert_ tasksTable
@@ -106,7 +107,7 @@ main = do
                   , description
                   , created = now
                   , modified = now
-                  , due = Nothing
+                  , due
                   }
               ]
 
