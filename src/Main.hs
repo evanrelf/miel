@@ -7,6 +7,9 @@
 
 module Main (main) where
 
+import qualified Data.Aeson as Aeson
+import Data.Aeson ((.=))
+import qualified Data.Aeson.Encode.Pretty as Aeson
 import qualified Data.Char as Char
 import qualified Data.Text.Prettyprint.Doc as Pretty
 import Data.Text.Prettyprint.Doc ((<+>), Pretty (..))
@@ -34,6 +37,16 @@ data Task = Task
   , due :: Maybe Time.UTCTime
   } deriving stock (Generic, Show)
     deriving anyclass Selda.SqlRow
+
+
+instance Aeson.ToJSON Task where
+  toJSON Task{..} = Aeson.object
+    [ "id" .= Selda.fromId id
+    , "description" .= description
+    , "created" .= formatRfc3339 created
+    , "modified" .= formatRfc3339 modified
+    , "due" .= fmap formatRfc3339 due
+    ]
 
 
 data InputTime
@@ -153,8 +166,16 @@ main = do
           [] -> die "Task not found"
           _ -> die ("Expected 1 row, but received " <> show (length tasks))
 
-    Edit (Selda.toId -> _id) -> do
-      putStrLn "TODO"
+    Edit (Selda.toId -> id) -> do
+      Selda.withSQLite database do
+        tasks <- Selda.query do
+          task <- Selda.select tasksTable
+          Selda.restrict (task & #id `Selda.is` id)
+          pure task
+        case tasks of
+          [task] -> putLBSLn (Aeson.encodePretty task)
+          [] -> die "Task not found"
+          _ -> die ("Expected 1 row, but received " <> show (length tasks))
 
     List ->
       Selda.withSQLite database do
