@@ -153,6 +153,9 @@ main = do
           [] -> die "Task not found"
           _ -> die ("Expected 1 row, but received " <> show (length tasks))
 
+    Edit (Selda.toId -> _id) -> do
+      putStrLn "TODO"
+
     List ->
       Selda.withSQLite database do
         tasks <- Selda.query (Selda.select tasksTable)

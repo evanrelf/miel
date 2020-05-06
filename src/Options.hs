@@ -25,6 +25,7 @@ data Command
   = Add Text
   | Delete Int
   | Show Int
+  | Edit Int
   | List
   deriving stock Show
 
@@ -39,6 +40,10 @@ parseDeleteCommand = Delete <$> argument auto (metavar "ID")
 
 parseShowCommand :: Parser Command
 parseShowCommand = Show <$> argument auto (metavar "ID")
+
+
+parseEditCommand :: Parser Command
+parseEditCommand = Edit <$> argument auto (metavar "ID")
 
 
 parseListCommand :: Parser Command
@@ -56,6 +61,9 @@ parseCommand = hsubparser $ mconcat
   , command "show"
       $ info parseShowCommand
       $ progDesc "Show single task"
+  , command "edit"
+      $ info parseEditCommand
+      $ progDesc "Edit single task in your $EDITOR"
   , command "list"
       $ info parseListCommand
       $ progDesc "List tasks"
