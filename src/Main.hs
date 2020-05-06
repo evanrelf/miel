@@ -67,11 +67,6 @@ rowHeading = Pretty.annotate Ansi.underlined
   "ID  │ Created    │ Modified   │ Due                  │ Description"
 
 
-data Status = Open | Closed
-  deriving stock (Generic, Enum, Bounded, Read, Show)
-  deriving anyclass Selda.SqlType
-
-
 tasksTable :: Selda.Table Task
 tasksTable = Selda.table "tasks" [ #id :- Selda.autoPrimary ]
 
