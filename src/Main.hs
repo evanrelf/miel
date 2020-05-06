@@ -47,11 +47,11 @@ prettyTaskRow Task{..} =
 prettyTaskDetail :: Task -> Pretty.Doc ann
 prettyTaskDetail Task{..} =
   Pretty.vsep
-    [ Pretty.fill 11 "ID" <+> pretty (show @Text id)
-    , Pretty.fill 11 "Description" <+> Pretty.align (Pretty.reflow description)
-    , Pretty.fill 11 "Created" <+> pretty (formatRfc3339 created)
-    , Pretty.fill 11 "Modified" <+> pretty (formatRfc3339 modified)
-    , Pretty.fill 11 "Due" <+> pretty (maybe "n/a" formatRfc3339 due)
+    [ "ID         " <+> pretty (show @Text id)
+    , "Description" <+> Pretty.align (Pretty.reflow description)
+    , "Created    " <+> pretty (formatRfc3339 created)
+    , "Modified   " <+> pretty (formatRfc3339 modified)
+    , "Due        " <+> pretty (maybe "n/a" formatRfc3339 due)
     ]
 
 
