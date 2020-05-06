@@ -8,6 +8,7 @@ module Main (main) where
 
 import qualified Data.Text.Prettyprint.Doc as Pretty
 import Data.Text.Prettyprint.Doc ((<+>), Pretty (..))
+import qualified Data.Text.Prettyprint.Doc.Render.Terminal as Ansi
 import qualified Data.Text.Prettyprint.Doc.Util as Pretty
 import qualified Data.Time as Time
 import qualified Database.Selda as Selda
@@ -53,6 +54,11 @@ prettyTaskDetail Task{..} =
     , "Modified   " <+> pretty (formatRfc3339 modified)
     , "Due        " <+> pretty (maybe "n/a" formatRfc3339 due)
     ]
+
+
+rowHeading :: Pretty.Doc Ansi.AnsiStyle
+rowHeading = Pretty.annotate Ansi.underlined
+  "ID  │ CREATED              │ MODIFIED             │ DUE                  │ DESCRIPTION"
 
 
 data Status = Open | Closed
@@ -106,5 +112,5 @@ main = do
     List ->
       Selda.withSQLite database do
         tasks <- Selda.query (Selda.select tasksTable)
-        putTextLn "ID  │ CREATED              │ MODIFIED             │ DUE                  │ DESCRIPTION"
+        liftIO (Ansi.putDoc (rowHeading <> "\n"))
         mapM_ (print . prettyTaskRow) tasks
