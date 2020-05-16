@@ -60,13 +60,13 @@ parseCommand = hsubparser $ mconcat
       $ progDesc "Delete task"
   , command "show"
       $ info parseShowCommand
-      $ progDesc "Show single task"
+      $ progDesc "Show task details"
   , command "edit"
       $ info parseEditCommand
-      $ progDesc "Edit single task in your $EDITOR"
+      $ progDesc "Edit task details in your $EDITOR"
   , command "list"
       $ info parseListCommand
-      $ progDesc "List tasks"
+      $ progDesc "List all tasks"
   ]
 
 
