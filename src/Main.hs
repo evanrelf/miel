@@ -1,7 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -55,15 +54,17 @@ data InputTime
 
 
 formatIso8601 :: Time.FormatTime t => t -> Text
-formatIso8601 = toText . Time.formatTime locale format where
-  locale = Time.defaultTimeLocale
-  format = Time.iso8601DateFormat Nothing
+formatIso8601 = toText . Time.formatTime locale format
+  where
+    locale = Time.defaultTimeLocale
+    format = Time.iso8601DateFormat Nothing
 
 
 formatRfc3339 :: Time.FormatTime t => t -> Text
-formatRfc3339 = toText . Time.formatTime locale format where
-  locale = Time.defaultTimeLocale
-  format = Time.iso8601DateFormat (Just "%H:%M:%SZ")
+formatRfc3339 = toText . Time.formatTime locale format
+  where
+    locale = Time.defaultTimeLocale
+    format = Time.iso8601DateFormat (Just "%H:%M:%SZ")
 
 
 prettyTaskRow :: Task -> Pretty.Doc ann
@@ -97,12 +98,12 @@ timeParser :: Parser InputTime
 timeParser = string "due:" *> string "now" $> Now
 
 
-inputParser ::Parser (Text, Maybe InputTime)
+inputParser :: Parser (Text, Maybe InputTime)
 inputParser = do
   space
   (ws, ts) <- fmap partitionEithers $ flip sepBy1 space1 $ asum
     [ Right <$> timeParser
-    , Left <$> toText <$> many (satisfy (\c -> Char.isPrint c && not (Char.isSpace c))) -- TODO
+    , Left . toText <$> many (satisfy (\c -> Char.isPrint c && not (Char.isSpace c))) -- TODO
     ]
   space
   void eof
