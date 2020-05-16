@@ -122,64 +122,90 @@ initialize database =
   Selda.withSQLite database (Selda.tryCreateTable tasksTable)
 
 
+handleAdd :: Settings -> Text -> IO ()
+handleAdd Settings{database} input =
+  case parse inputParser "input" input of
+    Left parseErrorBundle -> do
+      hPutStrLn stderr (errorBundlePretty parseErrorBundle)
+      exitFailure
+
+    Right (description, dueInputTime) -> do
+      now <- Time.getCurrentTime
+      let due =
+            case dueInputTime of
+              Nothing -> Nothing
+              Just Now -> Just now
+      Selda.withSQLite database do
+        Selda.insert_ tasksTable
+          [ Task
+              { id = Selda.def
+              , description
+              , created = now
+              , modified = now
+              , due
+              }
+          ]
+
+
+handleDelete :: Settings -> Int -> IO ()
+handleDelete Settings{database} (Selda.toId -> id) =
+  Selda.withSQLite database do
+    rows <- Selda.deleteFrom tasksTable (#id `Selda.is` id)
+    putTextLn ("Deleted " <> show rows <> " row(s)")
+
+
+handleShow :: Settings -> Int -> IO ()
+handleShow Settings{database} (Selda.toId -> id) =
+  Selda.withSQLite database do
+    tasks <- Selda.query do
+      task <- Selda.select tasksTable
+      Selda.restrict (task & #id `Selda.is` id)
+      pure task
+    case tasks of
+      [task] -> print (prettyTaskDetail task)
+      [] -> die "Task not found"
+      _ -> die ("Expected 1 row, but received " <> show (length tasks))
+
+
+handleEdit :: Settings -> Int -> IO ()
+handleEdit Settings{database} (Selda.toId -> id) =
+  Selda.withSQLite database do
+    tasks <- Selda.query do
+      task <- Selda.select tasksTable
+      Selda.restrict (task & #id `Selda.is` id)
+      pure task
+    case tasks of
+      [task] -> putLBSLn (Aeson.encodePretty task)
+      [] -> die "Task not found"
+      _ -> die ("Expected 1 row, but received " <> show (length tasks))
+
+
+handleList :: Settings -> IO ()
+handleList Settings{database} =
+  Selda.withSQLite database do
+    tasks <- Selda.query (Selda.select tasksTable)
+    liftIO (Ansi.putDoc (rowHeading <> "\n"))
+    mapM_ (print . prettyTaskRow) tasks
+
+
 main :: IO ()
 main = do
-  Options Settings{..} command <- getOptions
+  Options settings@Settings{database} command <- getOptions
+
   initialize database
 
   case command of
     Add input ->
-      case parse inputParser "input" input of
-        Left parseErrorBundle -> do
-          hPutStrLn stderr (errorBundlePretty parseErrorBundle)
-          exitFailure
+      handleAdd settings input
 
-        Right (description, dueInputTime) -> do
-          now <- Time.getCurrentTime
-          let due =
-                case dueInputTime of
-                  Nothing -> Nothing
-                  Just Now -> Just now
-          Selda.withSQLite database do
-            Selda.insert_ tasksTable
-              [ Task
-                  { id = Selda.def
-                  , description
-                  , created = now
-                  , modified = now
-                  , due
-                  }
-              ]
+    Delete id ->
+      handleDelete settings id
 
-    Delete (Selda.toId -> id) ->
-      Selda.withSQLite database do
-        rows <- Selda.deleteFrom tasksTable (#id `Selda.is` id)
-        putTextLn ("Deleted " <> show rows <> " row(s)")
+    Show id ->
+      handleShow settings id
 
-    Show (Selda.toId -> id) -> do
-      Selda.withSQLite database do
-        tasks <- Selda.query do
-          task <- Selda.select tasksTable
-          Selda.restrict (task & #id `Selda.is` id)
-          pure task
-        case tasks of
-          [task] -> print (prettyTaskDetail task)
-          [] -> die "Task not found"
-          _ -> die ("Expected 1 row, but received " <> show (length tasks))
-
-    Edit (Selda.toId -> id) -> do
-      Selda.withSQLite database do
-        tasks <- Selda.query do
-          task <- Selda.select tasksTable
-          Selda.restrict (task & #id `Selda.is` id)
-          pure task
-        case tasks of
-          [task] -> putLBSLn (Aeson.encodePretty task)
-          [] -> die "Task not found"
-          _ -> die ("Expected 1 row, but received " <> show (length tasks))
+    Edit id ->
+      handleEdit settings id
 
     List ->
-      Selda.withSQLite database do
-        tasks <- Selda.query (Selda.select tasksTable)
-        liftIO (Ansi.putDoc (rowHeading <> "\n"))
-        mapM_ (print . prettyTaskRow) tasks
+      handleList settings
