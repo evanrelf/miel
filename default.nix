@@ -1,4 +1,11 @@
+{ compiler ? "ghc883" }:
+
 let
+  haskellCompilerOverlay = pkgsNew: pkgsOld: {
+    haskellPackages =
+      pkgsOld.lib.dontRecurseIntoAttrs pkgsNew.haskell.packages."${compiler}";
+  };
+
   haskellPackagesOverlay = pkgsNew: pkgsOld: {
     haskellPackages = pkgsOld.haskellPackages.override (old: {
       overrides =
@@ -18,7 +25,10 @@ let
 
   pkgs =
     import ./nix/nixpkgs.nix {
-      overlays = [ haskellPackagesOverlay ];
+      overlays = [
+        haskellCompilerOverlay
+        haskellPackagesOverlay
+      ];
     };
 
 
