@@ -1,4 +1,4 @@
-cabal-version: 2.2
+cabal-version: 3.0
 
 name:       miel
 version:    0.0.0.0
@@ -48,8 +48,22 @@ common executable
     -with-rtsopts=-N
 
 
+common stan
+  ghc-options:
+    -fwrite-ide-info
+    -hiedir=.hie
+
+
+flag stan
+  description: Generate HIE files for Stan (https://github.com/kowainik/stan)
+  manual: True
+  default: False
+
+
 executable miel
   import: common, executable
+  if flag(stan)
+    import: stan
   hs-source-dirs: src
   main-is: Main.hs
   other-modules:
